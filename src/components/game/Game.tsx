@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Cell from "../cell/Cell";
+import Timer from "../timer/Timer";
+import Button from "../button/Button";
+import BombCounter from "../bombCounter.tsx/BombCounter";
 
 interface CellData {
   id: number;
@@ -7,7 +11,7 @@ interface CellData {
   col: number;
   hasBomb: boolean;
   hasMark: "flag" | "question" | "non";
-  bombCount: number;
+  bombAround: number;
 }
 
 export default function Game() {
@@ -56,7 +60,7 @@ export default function Game() {
           col,
           hasBomb,
           hasMark: "non",
-          bombCount: 0,
+          bombAround: 0,
         });
       }
       setCellData(newCells);
@@ -128,9 +132,7 @@ export default function Game() {
     if (currentCell?.hasBomb) {
       setIsGameOver(true);
 
-      const allBombs = cellData
-        .filter((cell) => cell.hasBomb)
-        .map((cell) => cell.id);
+      const allBombs = getAllBombs();
       setOpenedCell(new Set([...openedCell, ...allBombs]));
       return;
     }
@@ -140,7 +142,7 @@ export default function Game() {
 
     const updatedCellData = cellData.map((cell) => {
       if (temporaryOpened.has(cell.id)) {
-        return { ...cell, bombCount: checkCells(cell.row, cell.col) };
+        return { ...cell, bombAround: checkCells(cell.row, cell.col) };
       }
       return cell;
     });
@@ -155,10 +157,11 @@ export default function Game() {
       if (cell.row === row && cell.col === col) {
         return {
           ...cell,
-          hasMark: (
-            cell.hasMark === "flag" ? "question" :
-            cell.hasMark === "question" ? "non" : "flag"
-          ) as "flag" | "question" | "non"
+          hasMark: (cell.hasMark === "flag"
+            ? "question"
+            : cell.hasMark === "question"
+            ? "non"
+            : "flag") as "flag" | "question" | "non",
         };
       }
       return cell;
@@ -167,28 +170,50 @@ export default function Game() {
     setCellData(updatedCellData);
   };
 
+  const getAllBombs = () => {
+    return cellData
+      .filter((cell) => cell.hasBomb)
+      .map((cell) => cell.id);
+  };
+
+  const getAllFlags = () => {
+    return cellData
+      .filter(cell => cell.hasMark === "flag")
+      .map(cell => cell.id);
+  }
+
   return (
-    <div
-      className="grid gap-1 border rounded-lg bg-gray-200"
-      style={{
-        gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
-        gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
-      }}
-    >
-      {cellData.map((cell) => (
-        <Cell
-          key={cell.id}
-          id={cell.id}
-          col={cell.col}
-          row={cell.row}
-          hasBomb={cell.hasBomb}
-          hasMark={cell.hasMark}
-          bombCount={cell.bombCount}
-          isOpenCell={openedCell}
-          checkNearbyCells={checkNearbyCells}
-          setMark={setMark}
-        />
-      ))}
+    <div className="flex flex-col">
+      <div className="flex gap-3">
+        <Link to="/">
+          <Button btnText="В меню" />
+        </Link>
+        <Timer initialTime={roundTime} />
+        <BombCounter bombCount={getAllBombs().length} flagsSet={getAllFlags().length} />
+        <Button btnText="Перезапустить" />
+      </div>
+      <div
+        className="grid gap-1 border rounded-lg bg-gray-200"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
+          gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
+        }}
+      >
+        {cellData.map((cell) => (
+          <Cell
+            key={cell.id}
+            id={cell.id}
+            col={cell.col}
+            row={cell.row}
+            hasBomb={cell.hasBomb}
+            hasMark={cell.hasMark}
+            bombAround={cell.bombAround}
+            isOpenCell={openedCell}
+            checkNearbyCells={checkNearbyCells}
+            setMark={setMark}
+          />
+        ))}
+      </div>
     </div>
   );
 }

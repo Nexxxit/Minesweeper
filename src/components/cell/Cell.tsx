@@ -6,7 +6,7 @@ interface CellProps {
   row: number;
   hasBomb: boolean;
   hasMark: "flag" | "question" | "non";
-  bombCount: number;
+  bombAround: number;
   checkNearbyCells: (row: number, col: number) => void;
   setMark: (row: number, col: number) => void;
   isOpenCell: Set<number>;
@@ -18,7 +18,7 @@ export default function Cell({
   row,
   hasBomb,
   hasMark,
-  bombCount,
+  bombAround,
   checkNearbyCells,
   setMark,
   isOpenCell,
@@ -26,8 +26,8 @@ export default function Cell({
   const [textColor, setTextColor] = useState<string>("");
 
   useEffect(() => {
-    changeTextColor(bombCount);
-  }, [bombCount]);
+    changeTextColor(bombAround);
+  }, [bombAround]);
 
   const changeTextColor = (count: number) => {
     switch (count) {
@@ -83,8 +83,8 @@ export default function Cell({
         {isOpenCell.has(id)
           ? hasBomb
             ? "💣"
-            : bombCount !== undefined && bombCount > 0
-            ? `${bombCount}`
+            : bombAround !== undefined && bombAround > 0
+            ? `${bombAround}`
             : ""
           : hasMark === "flag"
           ? "🚩"
