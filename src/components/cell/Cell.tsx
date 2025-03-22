@@ -5,10 +5,10 @@ interface CellProps {
   col: number;
   row: number;
   hasBomb: boolean;
-  hasFlag: boolean;
+  hasMark: "flag" | "question" | "non";
   bombCount: number;
   checkNearbyCells: (row: number, col: number) => void;
-  setFlag: (row: number, col: number) => void;
+  setMark: (row: number, col: number) => void;
   isOpenCell: Set<number>;
 }
 
@@ -17,10 +17,10 @@ export default function Cell({
   col,
   row,
   hasBomb,
-  hasFlag,
+  hasMark,
   bombCount,
   checkNearbyCells,
-  setFlag,
+  setMark,
   isOpenCell,
 }: CellProps) {
   const [textColor, setTextColor] = useState<string>("");
@@ -61,22 +61,23 @@ export default function Cell({
   };
 
   const handleOpenCell = () => {
-    if(hasFlag) return;
+    if (hasMark !== "non") return;
     checkNearbyCells(row, col);
   };
 
-  const handleSetFlag = (e: React.MouseEvent) => {
+  const handleSetMark = (e: React.MouseEvent) => {
     e.preventDefault();
-    setFlag(row, col);
+    if(isOpenCell.has(id)) return;
+    setMark(row, col);
   };
 
   return (
     <div
       className={`border border-3 shadow-xl ${
-        isOpenCell.has(id) ? "bg-gray-400" : ""
+        isOpenCell.has(id) ? (hasBomb ? "bg-red-400" : "bg-gray-400") : ""
       } border-gray-300 ring-1 w-full h-full flex items-center justify-center cursor-pointer`}
       onClick={handleOpenCell}
-      onContextMenu={handleSetFlag}
+      onContextMenu={handleSetMark}
     >
       <p className={`${textColor} font-bold text-xl`}>
         {isOpenCell.has(id)
@@ -85,8 +86,10 @@ export default function Cell({
             : bombCount !== undefined && bombCount > 0
             ? `${bombCount}`
             : ""
-          : hasFlag
+          : hasMark === "flag"
           ? "🚩"
+          : hasMark === "question"
+          ? "❓"
           : ""}
       </p>
     </div>

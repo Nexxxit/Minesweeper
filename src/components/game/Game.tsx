@@ -6,7 +6,7 @@ interface CellData {
   row: number;
   col: number;
   hasBomb: boolean;
-  hasFlag: boolean;
+  hasMark: "flag" | "question" | "non";
   bombCount: number;
 }
 
@@ -55,7 +55,7 @@ export default function Game() {
           row,
           col,
           hasBomb,
-          hasFlag: false,
+          hasMark: "non",
           bombCount: 0,
         });
       }
@@ -148,15 +148,22 @@ export default function Game() {
     setOpenedCell(new Set(temporaryOpened));
   };
 
-  const setFlag = (row: number, col: number) => {
+  const setMark = (row: number, col: number) => {
     if (isGameOver) return;
 
     const updatedCellData = cellData.map((cell) => {
       if (cell.row === row && cell.col === col) {
-        return { ...cell, hasFlag: !cell.hasFlag };
+        return {
+          ...cell,
+          hasMark: (
+            cell.hasMark === "flag" ? "question" :
+            cell.hasMark === "question" ? "non" : "flag"
+          ) as "flag" | "question" | "non"
+        };
       }
       return cell;
     });
+
     setCellData(updatedCellData);
   };
 
@@ -175,11 +182,11 @@ export default function Game() {
           col={cell.col}
           row={cell.row}
           hasBomb={cell.hasBomb}
-          hasFlag={cell.hasFlag}
+          hasMark={cell.hasMark}
           bombCount={cell.bombCount}
           isOpenCell={openedCell}
           checkNearbyCells={checkNearbyCells}
-          setFlag={setFlag}
+          setMark={setMark}
         />
       ))}
     </div>
