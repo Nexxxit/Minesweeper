@@ -10,6 +10,8 @@ interface CellProps {
   checkNearbyCells: (row: number, col: number) => void;
   setMark: (row: number, col: number) => void;
   isOpenCell: Set<number>;
+  flagCount: number;
+  bombCount: number;
 }
 
 export default function Cell({
@@ -22,6 +24,8 @@ export default function Cell({
   checkNearbyCells,
   setMark,
   isOpenCell,
+  flagCount,
+  bombCount,
 }: CellProps) {
   const [textColor, setTextColor] = useState<string>("");
 
@@ -68,6 +72,7 @@ export default function Cell({
   const handleSetMark = (e: React.MouseEvent) => {
     e.preventDefault();
     if(isOpenCell.has(id)) return;
+    if(flagCount === bombCount) return;
     setMark(row, col);
   };
 

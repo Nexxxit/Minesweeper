@@ -21,6 +21,7 @@ export default function Game() {
   const [cellData, setCellData] = useState<CellData[]>([]);
   const [openedCell, setOpenedCell] = useState<Set<number>>(new Set());
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [win, setWin] = useState<boolean | null>(null);
 
   useEffect(() => {
     const gameMode = () => {
@@ -171,48 +172,106 @@ export default function Game() {
   };
 
   const getAllBombs = () => {
-    return cellData
-      .filter((cell) => cell.hasBomb)
-      .map((cell) => cell.id);
+    return cellData.filter((cell) => cell.hasBomb).map((cell) => cell.id);
   };
 
   const getAllFlags = () => {
     return cellData
-      .filter(cell => cell.hasMark === "flag")
-      .map(cell => cell.id);
-  }
+      .filter((cell) => cell.hasMark === "flag")
+      .map((cell) => cell.id);
+  };
+
+  const checkWinOrLose = () => {
+    const bombs = getAllBombs();
+    const isLose = bombs.some((bombId) => openedCell.has(bombId));
+
+    const safeCells = cellData
+      .filter((cell) => !cell.hasBomb)
+      .map((cell) => cell.id);
+
+    const isWin =
+      safeCells.length > 0 &&
+      safeCells.every((cellId) => openedCell.has(cellId));
+
+    const flagedCells = cellData
+      .filter((cell) => cell.hasMark === "flag")
+      .map((cell) => cell.id);
+
+    const isWinFlag =
+      bombs.length > 0 &&
+      bombs.length === flagedCells.length &&
+      bombs.every((bombId) => flagedCells.includes(bombId));
+
+    if (isLose) {
+      setIsGameOver(true);
+      setWin(false);
+      return;
+    }
+
+    if (isWin || isWinFlag) {
+      setIsGameOver(true);
+      setWin(true);
+      return;
+    }
+  };
+
+  const timeEnd = () => {
+    if (!isGameOver) {
+      setIsGameOver(true);
+      setWin(false);
+    }
+  };
+
+  useEffect(() => {
+    checkWinOrLose();
+  }, [openedCell, cellData]);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex gap-3">
-        <Link to="/">
-          <Button btnText="В меню" />
-        </Link>
-        <Timer initialTime={roundTime} />
-        <BombCounter bombCount={getAllBombs().length} flagsSet={getAllFlags().length} />
-        <Button btnText="Перезапустить" />
+    <div className="flex flex-col gap-5 relative">
+      <div className="flex items-center justify-between">
+        <Timer initialTime={roundTime} onTimeEnd={timeEnd} />
+        <BombCounter
+          bombCount={getAllBombs().length}
+          flagsSet={getAllFlags().length}
+        />
       </div>
-      <div
-        className="grid gap-1 border rounded-lg bg-gray-200"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
-        }}
-      >
-        {cellData.map((cell) => (
-          <Cell
-            key={cell.id}
-            id={cell.id}
-            col={cell.col}
-            row={cell.row}
-            hasBomb={cell.hasBomb}
-            hasMark={cell.hasMark}
-            bombAround={cell.bombAround}
-            isOpenCell={openedCell}
-            checkNearbyCells={checkNearbyCells}
-            setMark={setMark}
-          />
-        ))}
+      {win === null ? (
+        <div
+          className="grid gap-1 border rounded-lg bg-gray-200"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
+            gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
+          }}
+        >
+          {cellData.map((cell) => (
+            <Cell
+              key={cell.id}
+              id={cell.id}
+              col={cell.col}
+              row={cell.row}
+              hasBomb={cell.hasBomb}
+              hasMark={cell.hasMark}
+              bombAround={cell.bombAround}
+              isOpenCell={openedCell}
+              bombCount={getAllBombs().length}
+              flagCount={getAllFlags().length}
+              checkNearbyCells={checkNearbyCells}
+              setMark={setMark}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center p-20">
+          <p className="text-9xl text-white font-bold">
+            {win ? "Победа!" : "Поражение"}
+          </p>
+        </div>
+      )}
+      <div className="flex justify-between items-center">
+        <Link to="/">
+          <Button className="w-60" btnText="В меню" />
+        </Link>
+        <Button className="w-60" btnText="Перезапустить" />
       </div>
     </div>
   );
