@@ -6,6 +6,7 @@ interface CellData {
   row: number;
   col: number;
   hasBomb: boolean;
+  hasFlag: boolean;
   bombCount: number;
 }
 
@@ -14,8 +15,8 @@ export default function Game() {
   const [rows, setRows] = useState<number>(8);
   const [cols, setCols] = useState<number>(8);
   const [cellData, setCellData] = useState<CellData[]>([]);
-  // const [bombAround, setBombAround] = useState<number>(0);
   const [openedCell, setOpenedCell] = useState<Set<number>>(new Set());
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
   useEffect(() => {
     const gameMode = () => {
@@ -49,7 +50,14 @@ export default function Game() {
         if (Math.random() >= 0.8) {
           hasBomb = true;
         }
-        newCells.push({ id: i, row, col, hasBomb, bombCount: 0 });
+        newCells.push({
+          id: i,
+          row,
+          col,
+          hasBomb,
+          hasFlag: false,
+          bombCount: 0,
+        });
       }
       setCellData(newCells);
     };
@@ -112,17 +120,44 @@ export default function Game() {
   };
 
   const checkNearbyCells = (row: number, col: number) => {
+    if (isGameOver) return;
+
+    const currentCell = cellData.find(
+      (cell) => cell.row === row && cell.col === col
+    );
+    if (currentCell?.hasBomb) {
+      setIsGameOver(true);
+
+      const allBombs = cellData
+        .filter((cell) => cell.hasBomb)
+        .map((cell) => cell.id);
+      setOpenedCell(new Set([...openedCell, ...allBombs]));
+      return;
+    }
+
     const temporaryOpened = new Set(openedCell);
     openNearbyCells(row, col, temporaryOpened);
 
-    const updatedCellData = cellData.map(cell => {
+    const updatedCellData = cellData.map((cell) => {
       if (temporaryOpened.has(cell.id)) {
-        return {...cell, bombCount: checkCells(cell.row, cell.col)};
+        return { ...cell, bombCount: checkCells(cell.row, cell.col) };
       }
       return cell;
-    })
+    });
     setCellData(updatedCellData);
     setOpenedCell(new Set(temporaryOpened));
+  };
+
+  const setFlag = (row: number, col: number) => {
+    if (isGameOver) return;
+
+    const updatedCellData = cellData.map((cell) => {
+      if (cell.row === row && cell.col === col) {
+        return { ...cell, hasFlag: !cell.hasFlag };
+      }
+      return cell;
+    });
+    setCellData(updatedCellData);
   };
 
   return (
@@ -140,9 +175,11 @@ export default function Game() {
           col={cell.col}
           row={cell.row}
           hasBomb={cell.hasBomb}
+          hasFlag={cell.hasFlag}
           bombCount={cell.bombCount}
           isOpenCell={openedCell}
           checkNearbyCells={checkNearbyCells}
+          setFlag={setFlag}
         />
       ))}
     </div>

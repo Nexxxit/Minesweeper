@@ -5,8 +5,10 @@ interface CellProps {
   col: number;
   row: number;
   hasBomb: boolean;
+  hasFlag: boolean;
   bombCount: number;
   checkNearbyCells: (row: number, col: number) => void;
+  setFlag: (row: number, col: number) => void;
   isOpenCell: Set<number>;
 }
 
@@ -15,15 +17,17 @@ export default function Cell({
   col,
   row,
   hasBomb,
+  hasFlag,
   bombCount,
   checkNearbyCells,
+  setFlag,
   isOpenCell,
 }: CellProps) {
   const [textColor, setTextColor] = useState<string>("");
 
   useEffect(() => {
     changeTextColor(bombCount);
-  }, [bombCount])
+  }, [bombCount]);
 
   const changeTextColor = (count: number) => {
     switch (count) {
@@ -57,13 +61,22 @@ export default function Cell({
   };
 
   const handleOpenCell = () => {
+    if(hasFlag) return;
     checkNearbyCells(row, col);
+  };
+
+  const handleSetFlag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setFlag(row, col);
   };
 
   return (
     <div
-      className={`border border-3 shadow-xl ${isOpenCell.has(id) ? "bg-gray-400" : ""} border-gray-300 ring-1 w-full h-full flex items-center justify-center cursor-pointer`}
+      className={`border border-3 shadow-xl ${
+        isOpenCell.has(id) ? "bg-gray-400" : ""
+      } border-gray-300 ring-1 w-full h-full flex items-center justify-center cursor-pointer`}
       onClick={handleOpenCell}
+      onContextMenu={handleSetFlag}
     >
       <p className={`${textColor} font-bold text-xl`}>
         {isOpenCell.has(id)
@@ -72,6 +85,8 @@ export default function Cell({
             : bombCount !== undefined && bombCount > 0
             ? `${bombCount}`
             : ""
+          : hasFlag
+          ? "🚩"
           : ""}
       </p>
     </div>
