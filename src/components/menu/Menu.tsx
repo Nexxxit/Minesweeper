@@ -10,13 +10,13 @@ export default function Menu() {
         </p>
       </div>
       <Link to={"/game"}>
-        <Button btnText="Начать игру" />
+        <Button className="w-40 md:w-80 xl:w-160" btnText="Начать игру" />
       </Link>
       <Link to={"/leaderboard"}>
-        <Button btnText="Таблица лидеров" />
+        <Button className="w-40 md:w-80 xl:w-160" btnText="Таблица лидеров" />
       </Link>
       <Link to={"/settings"}>
-        <Button btnText="Настройки" />
+        <Button className="w-40 md:w-80 xl:w-160" btnText="Настройки" />
       </Link>
     </div>
   );
