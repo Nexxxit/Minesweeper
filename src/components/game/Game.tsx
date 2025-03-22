@@ -222,6 +222,8 @@ export default function Game() {
     }
   };
 
+
+
   useEffect(() => {
     checkWinOrLose();
   }, [openedCell, cellData]);
@@ -229,7 +231,7 @@ export default function Game() {
   return (
     <div className="flex flex-col gap-5 relative">
       <div className="flex items-center justify-between">
-        <Timer initialTime={roundTime} onTimeEnd={timeEnd} />
+        <Timer initialTime={roundTime} onTimeEnd={timeEnd} gameOver={isGameOver} />
         <BombCounter
           bombCount={getAllBombs().length}
           flagsSet={getAllFlags().length}
