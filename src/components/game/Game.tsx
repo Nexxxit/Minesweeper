@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Cell from "../cell/Cell";
 import Timer from "../timer/Timer";
 import Button from "../button/Button";
-import BombCounter from "../bombCounter.tsx/BombCounter";
+import BombCounter from "../bombCounter/BombCounter";
 
 interface CellData {
   id: number;
@@ -22,26 +22,39 @@ export default function Game() {
   const [openedCell, setOpenedCell] = useState<Set<number>>(new Set());
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [win, setWin] = useState<boolean | null>(null);
+  const [currentTime, setCurrentTime] = useState<number>();
+  const [gameKey, setGameKey] = useState<number>(0);
 
-  useEffect(() => {
-    const gameMode = () => {
-      const mode = localStorage.getItem("selectedOption");
-      if (mode === "easy") {
+  const restartGame = useCallback(() => {
+
+    setIsGameOver(false);
+    setWin(null);
+    setOpenedCell(new Set());
+    setCurrentTime(0);
+    setGameKey(prev => prev + 1);
+
+    const mode = localStorage.getItem("selectedOption") || "easy";
+    switch (mode) {
+      case "easy":
         setRoundTime("10:00");
         setCols(8);
         setRows(8);
-      } else if (mode === "medium") {
+        break;
+      case "medium":
         setRoundTime("40:00");
         setCols(16);
         setRows(16);
-      } else if (mode === "hard") {
+        break;
+      case "hard":
         setRoundTime("1:40:00");
         setCols(32);
         setRows(16);
-      }
-    };
+        break;
+    }
+  }, []);
 
-    gameMode();
+  useEffect(() => {
+    restartGame();
   }, []);
 
   useEffect(() => {
@@ -68,7 +81,7 @@ export default function Game() {
     };
 
     generateCells();
-  }, [rows, cols]);
+  }, [rows, cols, gameKey]);
 
   const direction = [
     [-1, -1],
@@ -222,58 +235,63 @@ export default function Game() {
     }
   };
 
-
-
   useEffect(() => {
     checkWinOrLose();
   }, [openedCell, cellData]);
 
+  const updateTime = (time: number) => {
+    setCurrentTime(time);
+  };
+
+  // const makeNewRecord = () => {
+  //   const enterName = prompt();
+  //   localStorage.setItem("record", [{ name: enterName }]);
+  // };
+
   return (
     <div className="flex flex-col gap-5 relative">
       <div className="flex items-center justify-between">
-        <Timer initialTime={roundTime} onTimeEnd={timeEnd} gameOver={isGameOver} />
+        <Timer
+          key={gameKey}
+          initialTime={roundTime}
+          onTimeEnd={timeEnd}
+          gameOver={isGameOver}
+          onTimeUpdate={updateTime}
+        />
         <BombCounter
           bombCount={getAllBombs().length}
           flagsSet={getAllFlags().length}
         />
       </div>
-      {win === null ? (
-        <div
-          className="grid gap-1 border rounded-lg bg-gray-200"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
-            gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
-          }}
-        >
-          {cellData.map((cell) => (
-            <Cell
-              key={cell.id}
-              id={cell.id}
-              col={cell.col}
-              row={cell.row}
-              hasBomb={cell.hasBomb}
-              hasMark={cell.hasMark}
-              bombAround={cell.bombAround}
-              isOpenCell={openedCell}
-              bombCount={getAllBombs().length}
-              flagCount={getAllFlags().length}
-              checkNearbyCells={checkNearbyCells}
-              setMark={setMark}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center p-20">
-          <p className="text-9xl text-white font-bold">
-            {win ? "Победа!" : "Поражение"}
-          </p>
-        </div>
-      )}
+      <div
+        className="grid gap-1 border rounded-lg bg-gray-200"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
+          gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
+        }}
+      >
+        {cellData.map((cell) => (
+          <Cell
+            key={cell.id}
+            id={cell.id}
+            col={cell.col}
+            row={cell.row}
+            hasBomb={cell.hasBomb}
+            hasMark={cell.hasMark}
+            bombAround={cell.bombAround}
+            isOpenCell={openedCell}
+            bombCount={getAllBombs().length}
+            flagCount={getAllFlags().length}
+            checkNearbyCells={checkNearbyCells}
+            setMark={setMark}
+          />
+        ))}
+      </div>
       <div className="flex justify-between items-center">
         <Link to="/">
           <Button className="w-60" btnText="В меню" />
         </Link>
-        <Button className="w-60" btnText="Перезапустить" />
+        <Button className="w-60" btnText="Перезапустить" onClick={restartGame} />
       </div>
     </div>
   );

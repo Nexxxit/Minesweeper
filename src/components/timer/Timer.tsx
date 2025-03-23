@@ -4,9 +4,15 @@ interface TimeProps {
   initialTime: string;
   gameOver: boolean;
   onTimeEnd: () => void;
+  onTimeUpdate?: (time: number) => void;
 }
 
-export default function Timer({ initialTime, onTimeEnd, gameOver }: TimeProps) {
+export default function Timer({
+  initialTime,
+  onTimeEnd,
+  gameOver,
+  onTimeUpdate,
+}: TimeProps) {
   const parseTime = (timeString: string): number => {
     const parts = timeString.split(":").map(Number);
 
@@ -42,18 +48,27 @@ export default function Timer({ initialTime, onTimeEnd, gameOver }: TimeProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      if (gameOver) {
+        clearInterval(interval);
+        return;
+      }
+
       setTimeLeft((prev) => {
-        if(gameOver) return prev;
-        if(prev <= 0){
-            onTimeEnd();
-            return 0;
+        if (prev <= 0) {
+          onTimeEnd();
+          return 0;
         }
+        onTimeUpdate?.(prev - 1);
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [onTimeEnd]);
+  }, [gameOver, onTimeEnd]);
 
-  return <div className="text-white font-bold text-3xl">⏱️{formatTime(timeLeft)}</div>;
+  return (
+    <div className="text-white font-bold text-3xl">
+      ⏱️{formatTime(timeLeft)}
+    </div>
+  );
 }
