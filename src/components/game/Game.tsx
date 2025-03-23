@@ -24,29 +24,39 @@ export default function Game() {
   const [win, setWin] = useState<boolean | null>(null);
   const [currentTime, setCurrentTime] = useState<number>();
   const [gameKey, setGameKey] = useState<number>(0);
+  const [initialTimeSeconds, setInitialTimeSeconds] = useState<number>(0);
 
   const restartGame = useCallback(() => {
-
     setIsGameOver(false);
     setWin(null);
     setOpenedCell(new Set());
     setCurrentTime(0);
-    setGameKey(prev => prev + 1);
+    setGameKey((prev) => prev + 1);
+
+    const parseTime = (timeString: string): number => {
+      const parts = timeString.split(":").map(Number);
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      return 0;
+    };
 
     const mode = localStorage.getItem("selectedOption") || "easy";
     switch (mode) {
       case "easy":
         setRoundTime("10:00");
+        setInitialTimeSeconds(parseTime("10:00"));
         setCols(8);
         setRows(8);
         break;
       case "medium":
         setRoundTime("40:00");
+        setInitialTimeSeconds(parseTime("40:00"));
         setCols(16);
         setRows(16);
         break;
       case "hard":
         setRoundTime("1:40:00");
+        setInitialTimeSeconds(parseTime("1:40:00"));
         setCols(32);
         setRows(16);
         break;
@@ -166,21 +176,38 @@ export default function Game() {
 
   const setMark = (row: number, col: number) => {
     if (isGameOver) return;
+    const flagEqualBombs = getAllBombs().length === getAllFlags().length;
+    const allFlags = getAllFlags();
 
     const updatedCellData = cellData.map((cell) => {
-      if (cell.row === row && cell.col === col) {
+      if (
+        cell.row === row &&
+        cell.col === col &&
+        flagEqualBombs &&
+        !allFlags.includes(cell.id)
+      ) {
         return {
           ...cell,
-          hasMark: (cell.hasMark === "flag"
-            ? "question"
-            : cell.hasMark === "question"
+          hasMark: (cell.hasMark === "question"
             ? "non"
-            : "flag") as "flag" | "question" | "non",
+            : cell.hasMark === "non"
+            ? "question"
+            : "non") as "question" | "non",
         };
+      } else {
+        if(cell.row === row && cell.col === col) {
+          return {
+            ...cell,
+            hasMark: (cell.hasMark === "flag"
+              ? "question"
+              : cell.hasMark === "question"
+              ? "non"
+              : "flag") as "flag" | "question" | "non",
+          };
+        }
       }
       return cell;
     });
-
     setCellData(updatedCellData);
   };
 
@@ -233,6 +260,7 @@ export default function Game() {
     if (!isGameOver) {
       setIsGameOver(true);
       setWin(false);
+      setCurrentTime(0);
     }
   };
 
@@ -240,28 +268,35 @@ export default function Game() {
     checkWinOrLose();
   }, [openedCell, cellData]);
 
-  const updateTime = (time: number) => {
+  const updateTime = useCallback((time: number) => {
     setCurrentTime(time);
-  };
+  }, []);
 
   const makeNewRecord = () => {
-    if(win !== true || !currentTime) return;
+    if (win !== true || !currentTime) return;
+    const timeSpent = initialTimeSeconds - currentTime;
 
     const enterName = prompt("Введите ваше имя:");
-    if(!enterName) return;
+    if (!enterName) return;
 
     const storedRecords = localStorage.getItem("leaderboard");
-    const records: {name: string; time: number}[] = storedRecords
-    ? JSON.parse(storedRecords)
-    : []; 
-    
-    const newRecord = { name: enterName, time: currentTime };
+    const records: { name: string; time: number }[] = storedRecords
+      ? JSON.parse(storedRecords)
+      : [];
+
+    const newRecord = { name: enterName, time: timeSpent };
     const updatedRecords = [...records, newRecord]
-    .sort((a, b) => a.time - b.time)
-    .slice(0, 10);
+      .sort((a, b) => a.time - b.time)
+      .slice(0, 10);
 
     localStorage.setItem("leaderboard", JSON.stringify(updatedRecords));
   };
+
+  useEffect(() => {
+    if (win === true) {
+      makeNewRecord();
+    }
+  }, [win]);
 
   return (
     <div className="flex flex-col gap-5 relative">
@@ -270,8 +305,8 @@ export default function Game() {
           key={gameKey}
           initialTime={roundTime}
           onTimeEnd={timeEnd}
-          gameOver={isGameOver}
           onTimeUpdate={updateTime}
+          gameOver={isGameOver}
         />
         <BombCounter
           bombCount={getAllBombs().length}
@@ -295,8 +330,6 @@ export default function Game() {
             hasMark={cell.hasMark}
             bombAround={cell.bombAround}
             isOpenCell={openedCell}
-            bombCount={getAllBombs().length}
-            flagCount={getAllFlags().length}
             checkNearbyCells={checkNearbyCells}
             setMark={setMark}
           />
@@ -306,7 +339,11 @@ export default function Game() {
         <Link to="/">
           <Button className="w-60" btnText="В меню" />
         </Link>
-        <Button className="w-60" btnText="Перезапустить" onClick={restartGame} />
+        <Button
+          className="w-60"
+          btnText="Перезапустить"
+          onClick={restartGame}
+        />
       </div>
     </div>
   );

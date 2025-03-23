@@ -47,24 +47,32 @@ export default function Timer({
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (gameOver) {
-        clearInterval(interval);
-        return;
-      }
+    let interval: number;
 
-      setTimeLeft((prev) => {
-        if (prev <= 0) {
-          onTimeEnd();
-          return 0;
-        }
-        onTimeUpdate?.(prev - 1);
-        return prev - 1;
-      });
-    }, 1000);
+    if (timeLeft > 0 && !gameOver) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 0 || gameOver) {
+            clearInterval(interval);
+            return prev - 1;
+          }
+          const newTime = prev - 1;
+          onTimeUpdate?.(newTime);
+          return newTime;
+        });
+      }, 1000);
+    }
 
-    return () => clearInterval(interval);
-  }, [gameOver, onTimeEnd]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timeLeft, onTimeUpdate, gameOver]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 || gameOver) {
+      onTimeEnd();
+    }
+  }, [timeLeft, onTimeEnd, gameOver]);
 
   return (
     <div className="text-white font-bold text-3xl">
