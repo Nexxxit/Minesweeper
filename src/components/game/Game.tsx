@@ -224,6 +224,7 @@ export default function Game() {
     if (isWin || isWinFlag) {
       setIsGameOver(true);
       setWin(true);
+      makeNewRecord();
       return;
     }
   };
@@ -243,10 +244,24 @@ export default function Game() {
     setCurrentTime(time);
   };
 
-  // const makeNewRecord = () => {
-  //   const enterName = prompt();
-  //   localStorage.setItem("record", [{ name: enterName }]);
-  // };
+  const makeNewRecord = () => {
+    if(win !== true || !currentTime) return;
+
+    const enterName = prompt("Введите ваше имя:");
+    if(!enterName) return;
+
+    const storedRecords = localStorage.getItem("leaderboard");
+    const records: {name: string; time: number}[] = storedRecords
+    ? JSON.parse(storedRecords)
+    : []; 
+    
+    const newRecord = { name: enterName, time: currentTime };
+    const updatedRecords = [...records, newRecord]
+    .sort((a, b) => a.time - b.time)
+    .slice(0, 10);
+
+    localStorage.setItem("leaderboard", JSON.stringify(updatedRecords));
+  };
 
   return (
     <div className="flex flex-col gap-5 relative">
