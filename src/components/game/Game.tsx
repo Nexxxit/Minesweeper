@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Cell from "../cell/Cell";
 import Timer from "../timer/Timer";
 import Button from "../button/Button";
@@ -25,6 +25,7 @@ export default function Game() {
   const [currentTime, setCurrentTime] = useState<number>();
   const [gameKey, setGameKey] = useState<number>(0);
   const [initialTimeSeconds, setInitialTimeSeconds] = useState<number>(0);
+  const navigate = useNavigate();
 
   const restartGame = useCallback(() => {
     setIsGameOver(false);
@@ -195,7 +196,7 @@ export default function Game() {
             : "non") as "question" | "non",
         };
       } else {
-        if(cell.row === row && cell.col === col) {
+        if (cell.row === row && cell.col === col) {
           return {
             ...cell,
             hasMark: (cell.hasMark === "flag"
@@ -252,6 +253,7 @@ export default function Game() {
       setIsGameOver(true);
       setWin(true);
       makeNewRecord();
+      useNavigate;
       return;
     }
   };
@@ -295,8 +297,10 @@ export default function Game() {
   useEffect(() => {
     if (win === true) {
       makeNewRecord();
+      const timer = setTimeout(() => navigate("/"), 2000);
+      return () => clearTimeout(timer);
     }
-  }, [win]);
+  }, [win, navigate]);
 
   return (
     <div className="flex flex-col gap-5 relative">
@@ -345,6 +349,13 @@ export default function Game() {
           onClick={restartGame}
         />
       </div>
+      {win !== null && (
+        <div className="absolute inset-0 flex justify-center items-center z-50 pointer-events-none">
+          <span className="text-white text-6xl opacity-100 font-bold animate-pulse">
+            {win ? "Победа!" : "Поражение"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
