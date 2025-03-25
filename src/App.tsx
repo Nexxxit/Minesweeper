@@ -6,7 +6,7 @@ import Game from "./components/game/Game";
 
 export default function App() {
   return (
-    <div className="bg-purple-400 p-20 h-screen flex items-center justify-center">
+    <div className="bg-purple-400 p-2 sm:p-10 md:p-15 lg:p-20 h-screen flex items-center justify-center">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Menu />} />
