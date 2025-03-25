@@ -4,6 +4,7 @@ import Cell from "../cell/Cell";
 import Timer from "../timer/Timer";
 import Button from "../button/Button";
 import BombCounter from "../bombCounter/BombCounter";
+import { leaderboardStore } from "../../stores/leaderboard.store";
 
 interface CellData {
   id: number;
@@ -274,24 +275,29 @@ export default function Game() {
     setCurrentTime(time);
   }, []);
 
+  const getCurrentLevel = (): "easy" | "medium" | "hard" => {
+    const storedLevel = localStorage.getItem("selectedOption");
+    return storedLevel === "easy" ||
+      storedLevel === "medium" ||
+      storedLevel === "hard"
+      ? storedLevel
+      : "easy";
+  };
+
   const makeNewRecord = () => {
-    if (win !== true || !currentTime) return;
+    if (!win || currentTime === undefined) return;
+
     const timeSpent = initialTimeSeconds - currentTime;
+    const currentLevel = getCurrentLevel();
 
-    const enterName = prompt("Введите ваше имя:");
-    if (!enterName) return;
+    const enterName = prompt("Введите ваше имя (макс. 15 символов)");
+    if (!enterName?.trim() || enterName.length > 15) return;
 
-    const storedRecords = localStorage.getItem("leaderboard");
-    const records: { name: string; time: number }[] = storedRecords
-      ? JSON.parse(storedRecords)
-      : [];
-
-    const newRecord = { name: enterName, time: timeSpent };
-    const updatedRecords = [...records, newRecord]
-      .sort((a, b) => a.time - b.time)
-      .slice(0, 10);
-
-    localStorage.setItem("leaderboard", JSON.stringify(updatedRecords));
+    leaderboardStore.addRecord({
+      name: enterName,
+      time: timeSpent,
+      level: currentLevel,
+    });
   };
 
   useEffect(() => {
