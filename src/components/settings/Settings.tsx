@@ -17,7 +17,7 @@ export default function Settings() {
     }, [selectedOption])
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-10 w-full md:w-150 lg:w-160">
       <div className="flex flex-col gap-5">
         <SettingMode 
           labelText="Просто 8х8, 10 мин."  
@@ -40,7 +40,7 @@ export default function Settings() {
       </div>
       <Link to={"/"}>
         <Button
-          className="w-full"
+          className="w-full text-xl"
           btnText="Назад"
         />
       </Link>

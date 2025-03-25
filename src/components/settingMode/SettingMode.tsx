@@ -4,20 +4,20 @@ interface SettingModeProps {
   labelText: string;
   check: boolean;
   id: string;
-  handleOptionChange: (event: ChangeEvent<HTMLInputElement>) => void; 
+  handleOptionChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function SettingMode({
   labelText,
   check,
   id,
-  handleOptionChange
+  handleOptionChange,
 }: SettingModeProps) {
 
   return (
-    <div className="flex gap-3 w-60 md:w-80 xl:w-160">
+    <div className="w-full flex gap-3">
       <label
-        className="w-full flex items-center transition duration-150 ease-in-out lg:hover:-translate-y-1 lg:hover:scale-105  flex gap-3 rounded-xl has-checked:outline-2 has-checked:outline-solid hover:outline-2 hover:outline-dashed outline-offset-2 cursor-pointer bg-blue-400 hover:bg-blue-500 p-5 has-checked:bg-blue-500 text-md md:text-xl xl:text-2xl"
+        className="w-full text-xl flex items-center transition duration-150 ease-in-out lg:hover:-translate-y-1 lg:hover:scale-105  flex gap-3 rounded-xl has-checked:outline-2 has-checked:outline-solid hover:outline-2 hover:outline-dashed outline-offset-2 cursor-pointer bg-blue-400 hover:bg-blue-500 p-5 has-checked:bg-blue-500 text-md md:text-xl xl:text-2xl"
         htmlFor={id}
       >
         <input
