@@ -57,7 +57,9 @@ export default function Timer({
             return prev - 1;
           }
           const newTime = prev - 1;
-          onTimeUpdate?.(newTime);
+          setTimeout(() => {
+            onTimeUpdate?.(newTime);
+          })
           return newTime;
         });
       }, 1000);
