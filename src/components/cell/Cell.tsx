@@ -10,6 +10,7 @@ interface CellProps {
   checkNearbyCells: (row: number, col: number) => void;
   setMark: (row: number, col: number) => void;
   isOpenCell: Set<number>;
+  marksMode: boolean;
 }
 
 export default function Cell({
@@ -22,6 +23,7 @@ export default function Cell({
   checkNearbyCells,
   setMark,
   isOpenCell,
+  marksMode,
 }: CellProps) {
   const [textColor, setTextColor] = useState<string>("");
 
@@ -77,10 +79,10 @@ export default function Cell({
       className={`border border-3 shadow-xl ${
         isOpenCell.has(id) ? (hasBomb ? "bg-red-400" : "bg-gray-400") : ""
       } border-gray-300 ring-1 w-full h-full flex items-center justify-center cursor-pointer`}
-      onClick={handleOpenCell}
+      onClick={marksMode ? handleSetMark : handleOpenCell}
       onContextMenu={handleSetMark}
     >
-      <p className={`${textColor} font-bold text-xl`}>
+      <p className={`${textColor} font-bold text-sm sm:text-xl`}>
         {isOpenCell.has(id)
           ? hasBomb
             ? "💣"

@@ -26,7 +26,23 @@ export default function Game() {
   const [currentTime, setCurrentTime] = useState<number>();
   const [gameKey, setGameKey] = useState<number>(0);
   const [initialTimeSeconds, setInitialTimeSeconds] = useState<number>(0);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [marksMode, setMarksMode] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const getCellSize = () => {
+    if (windowWidth < 640) return 25;
+    if (windowWidth < 1024) return 40;
+    return 50;
+  };
 
   const restartGame = useCallback(() => {
     setIsGameOver(false);
@@ -308,8 +324,12 @@ export default function Game() {
     }
   }, [win, navigate]);
 
+  const changeMode = () => {
+    setMarksMode(!marksMode);
+  }
+
   return (
-    <div className="flex flex-col gap-5 relative">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <Timer
           key={gameKey}
@@ -318,16 +338,20 @@ export default function Game() {
           onTimeUpdate={updateTime}
           gameOver={isGameOver}
         />
+        <label className="hidden lg:block cursor-pointer p-2 shadow ring-2 ring-gray-500 bg-gray-200 hover:bg-gray-300 has-checked:bg-gray-300">
+        🚩 
+          <input className="hidden" type="checkbox" checked={marksMode} onChange={changeMode} />
+        </label>
         <BombCounter
           bombCount={getAllBombs().length}
           flagsSet={getAllFlags().length}
         />
       </div>
       <div
-        className="grid gap-1 border rounded-lg bg-gray-200"
+        className="grid gap-1 border rounded-lg bg-gray-200 mx-auto overflow-auto aspect-square max-w-[95vw] max-h-[70vh] relative"
         style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(50px, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, minmax(50px, 1fr))`,
+          gridTemplateColumns: `repeat(${cols}, minmax(${getCellSize()}px, 50px))`,
+          gridTemplateRows: `repeat(${rows}, minmax(${getCellSize()}px, 50px))`,
         }}
       >
         {cellData.map((cell) => (
@@ -342,22 +366,23 @@ export default function Game() {
             isOpenCell={openedCell}
             checkNearbyCells={checkNearbyCells}
             setMark={setMark}
+            marksMode={marksMode}
           />
         ))}
       </div>
-      <div className="flex justify-between items-center">
-        <Link to="/">
-          <Button className="w-60" btnText="В меню" />
-        </Link>
-        <Button
+      <div className="flex flex-col gap-3 justify-between items-center">
+      <Button
           className="w-60"
           btnText="Перезапустить"
           onClick={restartGame}
         />
+        <Link to="/">
+          <Button className="w-60" btnText="В меню" />
+        </Link>
       </div>
       {win !== null && (
         <div className="absolute inset-0 flex justify-center items-center z-50 pointer-events-none">
-          <span className="text-white text-6xl opacity-100 font-bold animate-pulse">
+          <span className="text-white text-5xl sm:text-7xl opacity-100 font-bold animate-pulse">
             {win ? "Победа!" : "Поражение"}
           </span>
         </div>

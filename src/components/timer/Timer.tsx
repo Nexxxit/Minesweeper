@@ -75,7 +75,7 @@ export default function Timer({
   }, [timeLeft, onTimeEnd, gameOver]);
 
   return (
-    <div className="text-white font-bold text-3xl">
+    <div className="text-white font-bold text-xl sm:text-3xl">
       ⏱️{formatTime(timeLeft)}
     </div>
   );

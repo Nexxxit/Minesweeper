@@ -17,6 +17,6 @@ export default function BombCounter({bombCount, flagsSet}: BombCounter) {
     }
 
     return (
-        <p className="text-white font-bold text-3xl">💣{bombsLeft}</p>
+        <p className="text-white font-bold text-xl sm:text-3xl">💣{bombsLeft}</p>
     );
 }
