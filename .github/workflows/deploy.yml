@@ -6,10 +6,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: npm install && npm run build
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
+        - uses: actions/checkout@v4
+
+        - name: Install and build
+          run: npm install && npm run build
+
+        - name: Verify build
+          run: |
+            echo "Содержимое папки dist:"
+            ls -R dist
+            echo "\nСодержимое index.html:"
+            cat dist/index.html
+        - name: Deploy
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./dist
+            publish_branch: gh-pages
