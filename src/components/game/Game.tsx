@@ -338,7 +338,7 @@ export default function Game() {
           onTimeUpdate={updateTime}
           gameOver={isGameOver}
         />
-        <label className="hidden lg:block cursor-pointer p-2 shadow ring-2 ring-gray-500 bg-gray-200 hover:bg-gray-300 has-checked:bg-gray-300">
+        <label className="block lg:hidden text-sm md:text-xl cursor-pointer p-2 shadow ring-2 ring-gray-500 bg-gray-200 hover:bg-gray-300 has-checked:bg-gray-300">
         🚩 
           <input className="hidden" type="checkbox" checked={marksMode} onChange={changeMode} />
         </label>
