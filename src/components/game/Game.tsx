@@ -326,11 +326,11 @@ export default function Game() {
 
   const changeMode = () => {
     setMarksMode(!marksMode);
-  }
+  };
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative">
         <Timer
           key={gameKey}
           initialTime={roundTime}
@@ -338,10 +338,17 @@ export default function Game() {
           onTimeUpdate={updateTime}
           gameOver={isGameOver}
         />
-        <label className="block lg:hidden text-sm md:text-xl cursor-pointer p-1.5 shadow ring-2 ring-gray-500 bg-gray-200 hover:bg-gray-300 has-checked:bg-gray-300">
-        🚩 
-          <input className="hidden" type="checkbox" checked={marksMode} onChange={changeMode} />
-        </label>
+        <div className="absolute left-1/2 -translate-x-1/2 lg:hidden">
+          <label className="text-sm md:text-xl cursor-pointer p-1.5 shadow ring-2 ring-gray-500 bg-gray-200 hover:bg-gray-300 has-checked:bg-gray-300">
+            🚩
+            <input
+              className="hidden"
+              type="checkbox"
+              checked={marksMode}
+              onChange={changeMode}
+            />
+          </label>
+        </div>
         <BombCounter
           bombCount={getAllBombs().length}
           flagsSet={getAllFlags().length}
@@ -371,7 +378,7 @@ export default function Game() {
         ))}
       </div>
       <div className="flex flex-col gap-3 justify-between items-center">
-      <Button
+        <Button
           className="w-60"
           btnText="Перезапустить"
           onClick={restartGame}
