@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState} from "react";
 
 interface TimeProps {
   initialTime: string;
