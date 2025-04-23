@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 
 interface BombCounter {
     bombCount: number;
     flagsSet: number;
 }
 
-export default function BombCounter({bombCount, flagsSet}: BombCounter) {
+export default memo (function BombCounter({bombCount, flagsSet}: BombCounter) {
     const [bombsLeft, setBombsLeft] = useState<number>(bombCount);
 
     useEffect(() => {
@@ -19,4 +19,4 @@ export default function BombCounter({bombCount, flagsSet}: BombCounter) {
     return (
         <p className="text-white font-bold text-xl sm:text-3xl">💣{bombsLeft}</p>
     );
-}
+})

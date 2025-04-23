@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 interface CellProps {
   id: number;
@@ -13,7 +13,7 @@ interface CellProps {
   marksMode: boolean;
 }
 
-export default function Cell({
+export default memo (function Cell({
   id,
   col,
   row,
@@ -97,4 +97,4 @@ export default function Cell({
       </p>
     </div>
   );
-}
+})

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 interface TimeProps {
   initialTime: string;
@@ -13,38 +13,11 @@ export default function Timer({
   gameOver,
   onTimeUpdate,
 }: TimeProps) {
-  const parseTime = (timeString: string): number => {
-    const parts = timeString.split(":").map(Number);
-
-    if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 2) {
-      return parts[0] * 60 + parts[1];
-    }
-
-    return 0;
-  };
-
   const [timeLeft, setTimeLeft] = useState(parseTime(initialTime));
 
   useEffect(() => {
     setTimeLeft(parseTime(initialTime));
   }, [initialTime]);
-
-  const formatTime = (totalSeconds: number): string => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const remainingSeconds = totalSeconds % 3600;
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
-        .toString()
-        .padStart(2, "0")}`;
-    }
-
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   useEffect(() => {
     let interval: number;
@@ -59,7 +32,7 @@ export default function Timer({
           const newTime = prev - 1;
           setTimeout(() => {
             onTimeUpdate?.(newTime);
-          })
+          });
           return newTime;
         });
       }, 1000);
@@ -75,6 +48,33 @@ export default function Timer({
       onTimeEnd();
     }
   }, [timeLeft, onTimeEnd, gameOver]);
+
+  function parseTime(timeString: string): number {
+    const parts = timeString.split(":").map(Number);
+
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
+
+    return 0;
+  }
+
+  const formatTime = (totalSeconds: number): string => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const remainingSeconds = totalSeconds % 3600;
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
 
   return (
     <div className="text-white font-bold text-xl sm:text-3xl">

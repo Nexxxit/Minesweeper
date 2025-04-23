@@ -38,6 +38,48 @@ export default function Game() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    restartGame();
+  }, []);
+
+  useEffect(() => {
+    const generateCells = () => {
+      let newCells: CellData[] = [];
+      const totalCells = rows * cols;
+      for (let i = 0; i < totalCells; i++) {
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        let hasBomb = false;
+        if (Math.random() >= 0.8) {
+          hasBomb = true;
+        }
+        newCells.push({
+          id: i,
+          row,
+          col,
+          hasBomb,
+          hasMark: "non",
+          bombAround: 0,
+        });
+      }
+      setCellData(newCells);
+    };
+
+    generateCells();
+  }, [rows, cols, gameKey]);
+
+  useEffect(() => {
+    checkWinOrLose();
+  }, [openedCell, cellData]);
+
+  useEffect(() => {
+    if (win === true) {
+      makeNewRecord();
+      const timer = setTimeout(() => navigate("/"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [win, navigate]);
+
   const getCellSize = () => {
     if (windowWidth < 640) return 35;
     if (windowWidth < 1024) return 40;
@@ -80,36 +122,6 @@ export default function Game() {
         break;
     }
   }, []);
-
-  useEffect(() => {
-    restartGame();
-  }, []);
-
-  useEffect(() => {
-    const generateCells = () => {
-      let newCells: CellData[] = [];
-      const totalCells = rows * cols;
-      for (let i = 0; i < totalCells; i++) {
-        const row = Math.floor(i / cols);
-        const col = i % cols;
-        let hasBomb = false;
-        if (Math.random() >= 0.8) {
-          hasBomb = true;
-        }
-        newCells.push({
-          id: i,
-          row,
-          col,
-          hasBomb,
-          hasMark: "non",
-          bombAround: 0,
-        });
-      }
-      setCellData(newCells);
-    };
-
-    generateCells();
-  }, [rows, cols, gameKey]);
 
   const direction = [
     [-1, -1],
@@ -165,7 +177,7 @@ export default function Game() {
     });
   };
 
-  const checkNearbyCells = (row: number, col: number) => {
+  const checkNearbyCells = useCallback((row: number, col: number) => {
     if (isGameOver) return;
 
     const currentCell = cellData.find(
@@ -190,9 +202,9 @@ export default function Game() {
     });
     setCellData(updatedCellData);
     setOpenedCell(new Set(temporaryOpened));
-  };
+  }, [isGameOver, cellData, openedCell, rows, cols]);
 
-  const setMark = (row: number, col: number) => {
+  const setMark = useCallback((row: number, col: number) => {
     if (isGameOver) return;
     const flagEqualBombs = getAllBombs().length === getAllFlags().length;
     const allFlags = getAllFlags();
@@ -227,7 +239,7 @@ export default function Game() {
       return cell;
     });
     setCellData(updatedCellData);
-  };
+  }, [isGameOver, cellData]);
 
   const getAllBombs = () => {
     return cellData.filter((cell) => cell.hasBomb).map((cell) => cell.id);
@@ -283,10 +295,6 @@ export default function Game() {
     }
   };
 
-  useEffect(() => {
-    checkWinOrLose();
-  }, [openedCell, cellData]);
-
   const updateTime = useCallback((time: number) => {
     setCurrentTime(time);
   }, []);
@@ -316,14 +324,6 @@ export default function Game() {
     });
   };
 
-  useEffect(() => {
-    if (win === true) {
-      makeNewRecord();
-      const timer = setTimeout(() => navigate("/"), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [win, navigate]);
-
   const changeMode = () => {
     setMarksMode(!marksMode);
   };
@@ -332,7 +332,6 @@ export default function Game() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between relative">
         <Timer
-          key={gameKey}
           initialTime={roundTime}
           onTimeEnd={timeEnd}
           onTimeUpdate={updateTime}
